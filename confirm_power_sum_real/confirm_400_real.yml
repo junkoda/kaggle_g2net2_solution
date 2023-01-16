@@ -1,0 +1,11 @@
+
+confirm:
+  H_freq: 32
+  refine: 8
+  H_template: 8
+  n_template_select: 400
+  
+search:
+  name: wide_120_real
+
+fdot: -4..4
