@@ -50,7 +50,7 @@ def prepare(input_dir, output_dir):
     print('Real noise %d / %d' % (np.sum(idx), len(idx)))
 
     ofilename = '%s/test_real_noise.h5' % output_dir
-    with h5py.File('test_real_noise.h5', 'w') as f:
+    with h5py.File(ofilename, 'w') as f:
         f['idx'] = idx
 
     print(ofilename, 'written')
