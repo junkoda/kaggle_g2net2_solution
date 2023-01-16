@@ -1,0 +1,5 @@
+fdot: -120..120
+templates: 34000...38000
+
+optimal_weighting: true
+clip: none  # none or float
