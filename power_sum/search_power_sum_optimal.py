@@ -220,8 +220,8 @@ def main():
     output_dir = settings['OUTPUT_DIR']
 
     # Config
-    name = arg.name.replace('.yml', '')
-    filename_yml = name + '.yml'
+    filename_yml = arg.name.replace('.yml', '') + '.yml'
+    name = os.path.basename(arg.name).replace('.yml', '')
     with open(filename_yml, 'r') as f:
         cfg = yaml.safe_load(f)
 
