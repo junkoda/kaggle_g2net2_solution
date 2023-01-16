@@ -64,5 +64,5 @@ if __name__ == '__main__':
     with open(arg.settings, 'r') as f:
         cfg = json.load(f)
 
-    prepare(input_dir=cfg['KAGGLE_INPUT_DIR'],
+    prepare(input_dir=cfg['INPUT_DIR'],
             output_dir=cfg['OUTPUT_DIR'])
