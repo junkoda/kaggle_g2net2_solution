@@ -1,0 +1,12 @@
+
+output:
+  type: probability
+
+flat:
+  name: confirm_400_flat
+  exact: true
+
+real:
+  name: confirm_400_real
+  ch: 2
+  exact: true
