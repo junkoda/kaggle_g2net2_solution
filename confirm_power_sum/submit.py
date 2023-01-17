@@ -1,3 +1,6 @@
+"""
+Create submission file with flat noise predictions
+"""
 import numpy as np
 import pandas as pd
 import os
@@ -38,14 +41,24 @@ def create_submission0(input_dir: str, output_dir: str, name: str, *, exact=True
 
     submit0 = submit[['id', 'target']].copy()
 
+    # Assign prediction
     n = np.sum(idx_real)
     if len(sig) == n:
         submit0['target'].values[idx_flat] = sig
     else:
+        # When not all prediction are available (for debug run)
+        isig = 0
         nsig = len(sig)
-        submit0['target'].values[idx_flat][:nsig] = sig
+        y_pred = submit0['target'].values
+        for i in range(len(y_pred)):
+            if idx_flat[i]:
+                y_pred[i] = sig[isig]
+                isig += 1
+                if isig == nsig:
+                    break
         print('Warning: Only %d / %d predictions assigned' % (nsig, n))
 
+    # Fill dummy real-noise prediction ~ 0
     if exact:
         # Set -0.1 to real noise prediction
         submit0['target'].values[idx_real] = -0.1

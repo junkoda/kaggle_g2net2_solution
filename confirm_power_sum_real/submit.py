@@ -31,17 +31,24 @@ def create_submission_real(input_dir: str, output_dir: str,
     sig = sig[:, ch]
     ch = '_ch%d' % ch
 
-    # Create submission.csv
+    # For submission.csv
     submit1 = submit[['id', 'target']].copy()
 
+    # Assign prediction
     if len(idx_real) == len(sig):
         submit1['target'].values[idx_real] = sig
     else:
-        m = len(sig)
-        submit1['target'].values[idx_real][:m] = sig
-        print('Warning: Only %d / %d prediction assigned' % (len(sig), np.sum(idx_real)))
-    #print('Real noise', np.sum(idx_real), len(sig))
-    #assert np.sum(idx_real) == len(sig)
+        # When not all prediction are available (for debug run)
+        isig = 0
+        nsig = len(sig)
+        y_pred = submit1['target'].values
+        for i in range(len(y_pred)):
+            if idx_real[i]:
+                y_pred[i] = sig[isig]
+                isig += 1
+                if isig == nsig:
+                    break
+        print('Warning: Only %d / %d predictions assigned' % (nsig, np.sum(idx_real)))
 
     # Set flat
     idx_flat = ~idx_real
