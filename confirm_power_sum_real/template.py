@@ -19,7 +19,7 @@ class Template(nn.Module):
         self.refine = refine
 
         # kernel format: out_channels x in_channels x h x w
-        w = w.reshape(refine, 1, self.H, 1)  
+        w = w.reshape(refine, 1, self.H, 1)
         w = torch.from_numpy(w)  # refine x 1 x H x W
         self.register_buffer('w', w, persistent=False)
 
@@ -40,9 +40,6 @@ class Template(nn.Module):
         y = F.conv2d(x, self.w, stride=1)  # (2, refine, H - H_template + 1, W_in)
         y = y.real**2 + y.imag**2
 
-        #y = y.sum(dim=0)  # sum 2 channels
-        # Do not sum two channels here in real
-
         nch, refine, H2, W2 = y.shape  # [2, 4, 9, 5760]
         y = y.transpose(1, 2).reshape(2, refine * H2, W2)
         return y
@@ -61,9 +58,9 @@ def create_template(H: int, refine: int):
 
     f0s = np.arange(refine) / refine  # subgrid frequency in [0, 1)
     if H % 2 == 0:
-      f_bin = np.arange(-(H // 2) + 1, H // 2 + 1)  # [-1, 0, 1, 2] for H=4
+        f_bin = np.arange(-(H // 2) + 1, H // 2 + 1)  # [-1, 0, 1, 2] for H=4
     else:
-      f_bin = np.arange(-(H // 2), H // 2 + 1)  # (H, )  [-1, 0, 1] for H=3
+        f_bin = np.arange(-(H // 2), H // 2 + 1)  # (H, )  [-1, 0, 1] for H=3
     assert f_bin.shape[0] == H
     sign = 1 - 2 * (f_bin % 2)  # (-1)**f_bin
 

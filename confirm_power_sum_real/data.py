@@ -54,8 +54,7 @@ def normalize_time_dependence(x, mask):
 
     ret = {'x': x,
            'sigma2_time': sigma2_time,
-           'p': p,
-          }
+           'p': p}
     return ret
 
 
@@ -66,15 +65,14 @@ def mask_anomalous_frequency(x, mask, p, *, th=5.0):
     """
     nch, H, W = p.shape
     assert nch == 2 and H == 360
-    
+
     n_modes = np.sum(mask, axis=1)
     count = [0, 0]
-    
+
     for ch in [0, 1]:
         idx = mask[ch].astype(bool)
-        p_mean = np.mean(p[ch, :, idx], axis=0)  # 2 x 360
         sig = (np.mean(p[ch, :, idx], axis=0) - 1) * np.sqrt(n_modes[ch])
-        
+
         i_anomalous = np.arange(H)[sig > th]
         for i in i_anomalous:
             if i > 0:
@@ -83,7 +81,7 @@ def mask_anomalous_frequency(x, mask, p, *, th=5.0):
             if i + 1 < H:
                 x[ch, i + 1] = 0
             count[ch] += 1
-    
+
     return np.array(count)
 
 
@@ -123,9 +121,7 @@ def normalize(x, mask):
     w[idx] = 1 / sigma2[idx]
     assert np.isfinite(w).all()
 
-    ret = {#'sigma2': sigma2,  # 2 x 360 x 5760
-           'w': w,            # 1/sigma2 real-nise weight 2 x 360 x 5760
-          }
+    ret = {'w': w, }  # 1/sigma2 real-nise weight 2 x 360 x 5760
     return ret
 
 
@@ -239,7 +235,7 @@ class Data(_Data):
             df = df.iloc[ibegin:iend]
             print('data', ibegin, iend, len(df))
             assert len(df) > 0
-        
+
         if real_only:
             df = df[df.realistic]
 

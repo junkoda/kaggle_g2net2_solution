@@ -1,4 +1,3 @@
-import argparse
 import numpy as np
 import os
 import time
@@ -36,7 +35,7 @@ def load_templates(ibegin=0, iend=1000):
             freq_fits.append(freq_fit.reshape(1, 2, 5760))
             amp = f['p_total'][:]
             amps.append(amp.reshape(1, 2, 5760))
-    
+
     freq_fits = np.concatenate(freq_fits, axis=0)  # (n_templates, 2, 5760)
     amps = np.concatenate(amps, axis=0)
     f_shifts = freq_fits - np.expand_dims(freq_fits[:, 0, 0], axis=(1, 2))
@@ -52,7 +51,7 @@ def load_templates(ibegin=0, iend=1000):
 def create_shear_grid(fdots, H, W=5760):
     """
     fdots (array[float]): fdots in frequency bin per 120 days
-    
+
     Create grid for torch.grid_sample
       nfdot x H x W x 2; 2 for xy
     """
@@ -80,14 +79,15 @@ def confirm(x, H1_half, mask, w_real, freq, fshifts, amps, template, grid,
     """
     Confirm signal around (freq_confirm, fdot_confirm)
 
-    x (tensor): 1 x nch x 360 x 5760
-    H1_half (int): Zoom in to frequency bins freq_confirm +- H1_half
-    w_real (tensor): 1/sigma2 for time/frequency dependent noise (batch_size, 2, 360, 5760), 0 if data missing
-    freq (array): data frequency in Hz (n_templates, )
-    fshifts (tensor): 
-    fdots_confirm (array): freq bin / 120 days (n_templates, )
-    fdots (array): fdots [freq bin / 120 days] in grid
-    """    
+    Args:
+      x (tensor): 1 x nch x 360 x 5760
+      H1_half (int): Zoom in to frequency bins freq_confirm +- H1_half
+      w_real (tensor): 1/sigma2 for time/frequency dependent noise (batch_size, 2, 360, 5760), 0 if data missing
+      freq (array): data frequency in Hz (n_templates, )
+      fshifts (tensor):
+      fdots_confirm (array): freq bin / 120 days (n_templates, )
+      fdots (array): fdots [freq bin / 120 days] in grid
+    """
     n_templates = len(fshifts)
     assert len(amps) == n_templates
     assert len(freqs_confirm) == n_templates
@@ -96,9 +96,9 @@ def confirm(x, H1_half, mask, w_real, freq, fshifts, amps, template, grid,
     H1 = 2 * H1_half
 
     # Prepare data in device
-    x = x[0].to(device)  # 2 x H x W
-    mask = mask[0].to(device) # 2 x W
-    w_real = w_real[0].to(device) # 2 x 360 x 5760
+    x = x[0].to(device)            # 2 x H x W
+    mask = mask[0].to(device)      # 2 x W
+    w_real = w_real[0].to(device)  # 2 x 360 x 5760
 
     assert x.ndim == 3
     nch, H, W = x.shape
@@ -108,20 +108,12 @@ def confirm(x, H1_half, mask, w_real, freq, fshifts, amps, template, grid,
 
     assert grid.shape[1] == (H1_half * 2 - H_template + 1) * refine
 
-    fac = freq.mean().item() / 1000.0 
+    fac = freq.mean().item() / 1000.0
     n_fdot = grid.size(0)
 
     # t for deDoppler time domain
     t = (torch.arange(H) / H - 0.5).reshape(1, H, 1)
     t = t.to(device)
-
-    # Optimal weighting (t)
-    if amps is not None:
-        optimal = True
-    else:
-        optimal = False
-        w_opt = mask / mask.sum()  # 2 x W, sum(w_opt * mask) = 1
-        assert False
 
     # time for fdot_confirm * t
     t_5760 = torch.arange(5760, dtype=torch.float) / 5760  # [0, 1) in 120 days
@@ -163,7 +155,7 @@ def confirm(x, H1_half, mask, w_real, freq, fshifts, amps, template, grid,
         assert i_high - i_low == H1
         x_de = x_de[:, i_low:i_high]
 
-        # Optimal weighting 
+        # Optimal weighting
         w_opt = amps[j].reshape(2, W)  # 2 x W
         w_opt /= torch.sum(w_opt * mask)
 
@@ -182,7 +174,7 @@ def confirm(x, H1_half, mask, w_real, freq, fshifts, amps, template, grid,
         # -> n_fdot x 2 x H_refined x W
 
         y_sum = y.sum(axis=3)  # (n_fdot, 2, H_refined) -- 9 2 36
-        
+
         if return_all:
             power_sums.append(y.cpu().numpy().reshape(n_fdot, 2, H_refined))
 
@@ -190,7 +182,7 @@ def confirm(x, H1_half, mask, w_real, freq, fshifts, amps, template, grid,
         for ch in range(2):
             ymax, argmax = y_sum[:, ch].flatten().max(dim=0)
             power_sum_max[j, ch] = ymax.item()
-            power_sum_argmax[j, ch] = argmax.item() 
+            power_sum_argmax[j, ch] = argmax.item()
 
         # Combine 2 channels
         y_sum = y_sum.sum(dim=1)  # sum 2 channels
@@ -220,14 +212,14 @@ def confirm(x, H1_half, mask, w_real, freq, fshifts, amps, template, grid,
                 w = torch.sum(w_opt.reshape(2, 1, W) * w_real, dim=0)
 
             img = w.reshape(1, 1, H, W)
-            y_signal_level= F.grid_sample(img, grid_max, mode='nearest',
-                                padding_mode='zeros', align_corners=False)
+            y_signal_level = F.grid_sample(img, grid_max, mode='nearest',
+                                           padding_mode='zeros', align_corners=False)
             # -> 1 x 1 x 1 x W
             y_signal_level = y_signal_level.sum(axis=3)
             signal_level[ch] = 2.25 * y_signal_level[0, 0, 0].item()
 
         y_line = y[i_fdot, :, j_freq, :].cpu().numpy().copy()  # 2 x 5760
-        
+
     ret = {'power_sum_max': power_sum_max,         # (n_templates, )
            'power_sum_argmax': power_sum_argmax,
            'signal_level': signal_level,  # 1 if S2 = 2.25 and N_modes=2x5760
@@ -236,7 +228,7 @@ def confirm(x, H1_half, mask, w_real, freq, fshifts, amps, template, grid,
            'n_modes': n_modes,
            'y_max_line': y_line,
            }
-        
+
     if return_all:
         # Hough map before taking max (n_templates, n_fdot, H)
         ret['power_sum'] = np.concatenate(power_sums, axis=0)
@@ -252,13 +244,13 @@ def compute_signal_info(d):
     """
     if 'signal_H1' not in d:
         return None
-    
+
     f0 = np.zeros(2, dtype=np.int16)
 
     x = torch.cat([d['signal_H1'], d['signal_L1']], dim=2)  # signal only (1, H, )
-    
+
     p = x.real**2 + x.imag**2  # (1, H, W2) where W2 = W_H1 + W_L1
-    p_total = p[0].sum(dim=0)  # total signal in all frequencies  (W, ) 
+    p_total = p[0].sum(dim=0)  # total signal in all frequencies  (W, )
     perfect_total = p_total.sum().item()
     n_modes = len(p_total)
 
@@ -328,6 +320,8 @@ def load_search_result(odir, i, idx_template, fdots_search, n_select):
 #
 # Main
 #
+
+
 def main():
     # Command-line options
     parser = argparse.ArgumentParser()
@@ -435,7 +429,7 @@ def main():
         ofilename = '%s/%06d.h5' % (odir, i + ibegin)
         if i > 10 and os.path.exists(ofilename) and not overwrite:
             raise FileExistsError(ofilename)
-        
+
         # Load base search result
         search = load_search_result(search_dir, d['i'],
                                     idx_template, fdots_search, n_select)
@@ -471,4 +465,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

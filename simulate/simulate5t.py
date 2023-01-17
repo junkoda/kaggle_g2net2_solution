@@ -1,9 +1,9 @@
 """
-Simulate 5t
-- Save template only: frequency and amplitude, 2 x 5760 each
+Create templates: signal frequences and amplitudes
 
-$ python3 simulate5t.py --i=0:1001 --odir=10k
-$ python3 simulate5t.py --10k=0
+Save template only: frequency and amplitude, 2 x 5760 each
+
+$ python3 simulate5t.py --next-k
 
 Requirement:
   output directories sim5y and temp
