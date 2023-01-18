@@ -17,6 +17,7 @@ Hardware and software used to create the solution.
 - CUDA 11.6 (NVIDIA driver Version: 510.108.03)
 - Standard packages: numpy, pandas, h5py, scipy, tqdm
 
+```text
 autopep8                  1.6.0
 flake8                    4.0.1
 h5py                      3.7.0
@@ -35,3 +36,4 @@ scipy                     1.9.1
 slackweb                  1.0.5
 torchvision               0.13.1
 tqdm                      4.64.1
+```

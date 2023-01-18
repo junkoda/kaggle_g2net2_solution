@@ -10,6 +10,8 @@ Entry Points
 - All test data are listed in `INPUT_DIR/sample_submission.csv`
   in alphabetical order
 - Templates are in `TEMPLATE_DIR/10k/fit*.h5`
+- `OUTPUT_DIR` do not have same output, or use `--overwrite`.
+
 
 # 1. Prepare
 
@@ -50,7 +52,7 @@ $ python3 src/confirm_power_sum_real/confirm_power_sum_real.py src/confirm_power
 
 # 4. Create submission file
 
-Gather search result and create submission file.
+Gather search results and create submission file.
 
 ```bash
 $ python3 src/confirm_power_sum/submit.py confirm_400_flat
