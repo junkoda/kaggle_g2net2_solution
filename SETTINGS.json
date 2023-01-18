@@ -1,0 +1,4 @@
+{"INPUT_DIR": "/kaggle/input/g2net-detecting-continuous-gravitational-waves",
+ "TEMPLATE_DATA_DIR": "./templates",
+ "OUTPUT_DIR": "./output"
+}
